@@ -1,4 +1,10 @@
 import telebot
+import requests
+
+
+def get_exchange():
+    pass
+
 
 bot = telebot.TeleBot('5759812289:AAGyL0rOvMsYfLxDcky5uvmACI8x9TnVJAU')
 
