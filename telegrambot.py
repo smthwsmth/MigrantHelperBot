@@ -9,10 +9,16 @@ def start(message):
 
 @bot.message_handler()
 def get_user_text(message):
-    bot.send_message(message.chat.id, message, parse_mode='html')
-    print(message.chat.from_user[id])
+    if message.text == 'Hello':
+        bot.send_message(message.chat.id, 'И тебе привет!', parse_mode='html')
+    elif message.text.lower() == 'места':
+        bot.send_message(message.chat.id, 'В твоем городе есть такие достопримечательности:', parse_mode='html')
+    elif message.text.lower() == 'english':
+        bot.send_message(message.chat.id, 'Word of day is ', parse_mode='html')
+    else:
+        bot.send_message(message.chat.id, 'Извини, насяльника, моя твоя ни панимать', parse_mode='html')
 
-
+  
 
 
 
