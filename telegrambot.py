@@ -10,31 +10,31 @@ from selenium.common.exceptions import NoSuchElementException
 from bs4 import BeautifulSoup
 from time import sleep
 
+class Exchange:
+    def get_exchange_uz(self):
+        self.url = 'https://bank.uz/currency'
+        self.browser = Chrome('/home/smthwsmth/Desktop/chromedriver')
+        self.browser.get(self.url)
 
-def get_exchange_uz():
-    url = 'https://bank.uz/currency'
-    browser = Chrome('/home/smthwsmth/Desktop/chromedriver')
-    browser.get(url)
+        self.button = self.browser.find_element(By.CSS_SELECTOR, '#best_USD > div > div > div.organization-contacts > div.bc-inner-blocks-left > a')  #нажатие кнопки "Все банки"
+        self.button.send_keys("\n") #send enter for links, buttons
 
-    button = browser.find_element(By.CSS_SELECTOR, '#best_USD > div > div > div.organization-contacts > div.bc-inner-blocks-left > a')  #нажатие кнопки "Все банки"
-    button.send_keys("\n") #send enter for links, buttons
+        #browser.execute_script("arguments[0].click();", button)
+        #the option above is the way to overcome error "Element is not clickable at point (X,Y)"
+        self.info_buy = []
+        self.info_sell = []
+        self.bank_buy = self.browser.find_element(By.CLASS_NAME, 'bc-inner-block-left').find_elements(By.CLASS_NAME, 'bc-inner-block-left-texts  ')
+        self.bank_sell = self.browser.find_element(By.CLASS_NAME, 'bc-inner-blocks-right').find_elements(By.CLASS_NAME, 'bc-inner-block-left-texts  ')
+        for i in self.bank_buy:
+            self.name_bank = i.find_element(By.CLASS_NAME, 'medium-text').text.strip()
+            self.act_course = i.find_element(By.CLASS_NAME, 'green-date').text.strip()
+            self.info_buy.append(f"{self.name_bank.ljust(5)}--->за 1$ ты получишь {self.act_course}")
+        for i in self.bank_sell:
+            self.name_bank = i.find_element(By.CLASS_NAME, 'medium-text').text.strip()
+            self.act_course = i.find_element(By.CLASS_NAME, 'green-date').text.strip()
+            self.info_sell.append(f"{self.name_bank.ljust(5)}--->{self.act_course} просят за 1$")
 
-    #browser.execute_script("arguments[0].click();", button)
-    #the option above is the way to overcome error "Element is not clickable at point (X,Y)"
-    info_buy = []
-    info_sell = []
-    bank_buy = browser.find_element(By.CLASS_NAME, 'bc-inner-block-left').find_elements(By.CLASS_NAME, 'bc-inner-block-left-texts  ')
-    bank_sell = browser.find_element(By.CLASS_NAME, 'bc-inner-blocks-right').find_elements(By.CLASS_NAME, 'bc-inner-block-left-texts  ')
-    for i in bank_buy:
-        name_bank = i.find_element(By.CLASS_NAME, 'medium-text').text.strip()
-        act_course = i.find_element(By.CLASS_NAME, 'green-date').text.strip()
-        info_buy.append(f"{name_bank.ljust(15)}----->{act_course}")
-    for i in bank_sell:
-        name_bank = i.find_element(By.CLASS_NAME, 'medium-text').text.strip()
-        act_course = i.find_element(By.CLASS_NAME, 'green-date').text.strip()
-        info_sell.append(f"{name_bank.ljust(15)}----->{act_course}")
-
-    return info_buy, info_sell
+        return self.info_buy, self.info_sell
 
 
 bot = telebot.TeleBot('5759812289:AAGyL0rOvMsYfLxDcky5uvmACI8x9TnVJAU')
@@ -67,7 +67,8 @@ def act_currency(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback_worker(call):
     bot.send_message(call.message.chat.id, 'Подожди чуток, я наберу Бахтийара и узнаю курс валют. Не отключайся')
-    currency_buy, currency_sell = get_exchange_uz()
+    currency = Exchange()    #make an instance of class
+    currency_buy, currency_sell = currency.get_exchange_uz()
     if call.data == 'all':
         bot.send_message(call.message.chat.id, '<b>ПОКУПКА</b>', parse_mode='html')
         for i in currency_buy:
