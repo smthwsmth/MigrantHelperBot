@@ -21,15 +21,21 @@ def get_exchange_uz():
 
     #browser.execute_script("arguments[0].click();", button)
     #the option above is the way to overcome error "Element is not clickable at point (X,Y)"
-    info = []
+    info_buy = []
+    info_sell = []
     max_ljust = 0
-    button = browser.find_element(By.CLASS_NAME, 'bc-inner-block-left').find_elements(By.CLASS_NAME, 'bc-inner-block-left-texts  ')
-    for i in button:
+    bank_buy = browser.find_element(By.CLASS_NAME, 'bc-inner-block-left').find_elements(By.CLASS_NAME, 'bc-inner-block-left-texts  ')
+    bank_sell = browser.find_element(By.CLASS_NAME, 'bc-inner-blocks-right').find_elements(By.CLASS_NAME, 'bc-inner-block-left-texts  ')
+    for i in bank_buy:
         name_bank = i.find_element(By.CLASS_NAME, 'medium-text').text.strip()
         act_course = i.find_element(By.CLASS_NAME, 'green-date').text.strip()
-        info.append(f"{name_bank.ljust(15)}----->{act_course}")
+        info_buy.append(f"{name_bank.ljust(15)}----->{act_course}")
+    for i in bank_sell:
+        name_bank = i.find_element(By.CLASS_NAME, 'medium-text').text.strip()
+        act_course = i.find_element(By.CLASS_NAME, 'green-date').text.strip()
+        info_sell.append(f"{name_bank.ljust(15)}----->{act_course}")
 
-    return info
+    return info_buy, info_sell
 
 
 bot = telebot.TeleBot('5759812289:AAGyL0rOvMsYfLxDcky5uvmACI8x9TnVJAU')
@@ -52,10 +58,26 @@ def website(message):
 @bot.message_handler(commands=['currency'])
 def act_currency(message):
     bot.send_message(message.chat.id, 'Подожди чуток, я наберу Бахтийара и узнаю курс валют. Не отключайся')
-    currency = get_exchange_uz()
-    for num, i in enumerate(currency):
+    currency_buy, currency_sell = get_exchange_uz()
+    bot.send_message(message.chat.id, '<b>ПОКУПКА</b>', parse_mode='html')
+    for i in currency_buy:
+        bot.send_message(message.chat.id, i)
+    bot.send_message(message.chat.id, '<b>ПРОДАЖА</b>', parse_mode='html')
+    for i in currency_sell:
         bot.send_message(message.chat.id, i)
 
+@bot.message_handler(commands=['best_curr'])
+def act_currency(message):
+    bot.send_message(message.chat.id, 'Подожди чуток, я наберу Бахтийара и узнаю курс валют. Не отключайся')
+    currency_buy, currency_sell = get_exchange_uz()
+    bot.send_message(message.chat.id, '<b>ПОКУПКА</b>', parse_mode='html')
+    for num, i in enumerate(currency_buy):
+        if num < 5:
+            bot.send_message(message.chat.id, i)
+    bot.send_message(message.chat.id, '<b>ПРОДАЖА</b>', parse_mode='html')
+    for num, i in enumerate(currency_sell):
+        if num < 5:
+            bot.send_message(message.chat.id, i)
 
 @bot.message_handler(content_types=['text'])
 def get_user_text(message):
@@ -66,7 +88,7 @@ def get_user_text(message):
     elif message.text.lower() == 'english':
         bot.send_message(message.chat.id, 'Word of day is ', parse_mode='html')
     elif message.text.lower() == 'узбекистан':
-        bot.send_message(message.chat.id, 'В этой стране я могу узнать для тебя: выгодный курс валют (/currency)')
+        bot.send_message(message.chat.id, 'В этой стране я могу узнать для тебя: выгодный курс валют (/currency - информация по всем банкам, /best_curr - первые 5 банков)')
     else:
         bot.send_message(message.chat.id, 'Извини, насяльника, моя твоя ни панимать', parse_mode='html')
 
