@@ -23,7 +23,6 @@ def get_exchange_uz():
     #the option above is the way to overcome error "Element is not clickable at point (X,Y)"
     info_buy = []
     info_sell = []
-    max_ljust = 0
     bank_buy = browser.find_element(By.CLASS_NAME, 'bc-inner-block-left').find_elements(By.CLASS_NAME, 'bc-inner-block-left-texts  ')
     bank_sell = browser.find_element(By.CLASS_NAME, 'bc-inner-blocks-right').find_elements(By.CLASS_NAME, 'bc-inner-block-left-texts  ')
     for i in bank_buy:
@@ -57,27 +56,35 @@ def website(message):
 
 @bot.message_handler(commands=['currency'])
 def act_currency(message):
-    bot.send_message(message.chat.id, 'Подожди чуток, я наберу Бахтийара и узнаю курс валют. Не отключайся')
-    currency_buy, currency_sell = get_exchange_uz()
-    bot.send_message(message.chat.id, '<b>ПОКУПКА</b>', parse_mode='html')
-    for i in currency_buy:
-        bot.send_message(message.chat.id, i)
-    bot.send_message(message.chat.id, '<b>ПРОДАЖА</b>', parse_mode='html')
-    for i in currency_sell:
-        bot.send_message(message.chat.id, i)
+    
+    keyboard = types.InlineKeyboardMarkup()
+    key_full = types.InlineKeyboardButton(text='Курс всех банков', callback_data='all')
+    key_main = types.InlineKeyboardButton(text='Только лучший курс', callback_data='part')
+    keyboard.add(key_full, key_main)
+    question = 'Отобразить информацию по всем банкам или только лучший курс?'
+    bot.send_message(message.chat.id, question, reply_markup=keyboard)
 
-@bot.message_handler(commands=['best_curr'])
-def act_currency(message):
-    bot.send_message(message.chat.id, 'Подожди чуток, я наберу Бахтийара и узнаю курс валют. Не отключайся')
+@bot.callback_query_handler(func=lambda call: True)
+def callback_worker(call):
+    bot.send_message(call.message.chat.id, 'Подожди чуток, я наберу Бахтийара и узнаю курс валют. Не отключайся')
     currency_buy, currency_sell = get_exchange_uz()
-    bot.send_message(message.chat.id, '<b>ПОКУПКА</b>', parse_mode='html')
-    for num, i in enumerate(currency_buy):
-        if num < 5:
-            bot.send_message(message.chat.id, i)
-    bot.send_message(message.chat.id, '<b>ПРОДАЖА</b>', parse_mode='html')
-    for num, i in enumerate(currency_sell):
-        if num < 5:
-            bot.send_message(message.chat.id, i)
+    if call.data == 'all':
+        bot.send_message(call.message.chat.id, '<b>ПОКУПКА</b>', parse_mode='html')
+        for i in currency_buy:
+            bot.send_message(call.message.chat.id, i)
+        bot.send_message(call.message.chat.id, '<b>ПРОДАЖА</b>', parse_mode='html')
+        for i in currency_sell:
+            bot.send_message(call.message.chat.id, i)
+    elif call.data == 'part':
+        bot.send_message(call.message.chat.id, '<b>ПОКУПКА</b>', parse_mode='html')
+        for num, i in enumerate(currency_buy):
+            if num < 5:
+                bot.send_message(call.message.chat.id, i)
+        bot.send_message(call.message.chat.id, '<b>ПРОДАЖА</b>', parse_mode='html')
+        for num, i in enumerate(currency_sell):
+            if num < 5:
+                bot.send_message(call.message.chat.id, i)
+
 
 @bot.message_handler(content_types=['text'])
 def get_user_text(message):
